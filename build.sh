@@ -1,0 +1,1 @@
+gcc -o main -Wall main.c -lm -lpthread
