@@ -1,85 +1,23 @@
-# ソフトウェアII 第2回課題
-J4190115 小栗悠太郎
+# Multi-body Dynamics and Fusion Simulation
 
 ## Usage
 
 ### Build & Run
 ```
-# falling
-./build_falling.sh
-./falling
+./build.sh
+./main NUM_OBJECTS PATH_TO_DATA (euler|heun|middle)
 
-# bouncing
-./build_bouncing.sh
-./bouncing
-
-# 課題1
-./build_my_bouncing1.sh
-./my_bouncing1
-
-# 課題2
-./build_my_bouncing2.sh
-./my_bouncing2 NUM_OBJECTS PATH_TO_DATA
-
-e.g.) ./my_bouncing2 5 data/single_simple.dat
-
-# 課題3
-./build_my_bouncing3.sh
-./my_bouncing3 NUM_OBJECTS PATH_TO_DATA
-
-e.g.) ./my_bouncing3 10 data/single_simple.dat
-
-# 課題4
-./build_my_bouncing4.sh
-./my_bouncing4 NUM_OBJECTS PATH_TO_DATA (euler|heun|middle)
-
-e.g.) ./my_bouncing4 8 data/single_simple.dat middle
+e.g.) ./main 8 data/single_simple.dat middle
         euler = オイラー法, heun = ホイン法, middle = 中点法
 ```
-
-### 課題4の実行におけるkey操作
+### Key
 |key|動作|
 |---|---|
 |Q|終了|
 |A|再生スピード一段階ダウン|
 |D|再生スピード一段階アップ|
 
-## 説明
-全体を通して、動作確認には`data/`以下にある`*.dat`ファイルを用いた。
-
-### 課題1(必須課題)
-実装は`struct_alignment.c`に行った。
-説明については指示通り[struct_alignment.md](./struct_alignment.md)に記載した。
-markdownファイルの中に図を埋め込んでいるが、正しくレンダリングされない場合は`image/memory_alignment_figure.jpg`を参照。
-
-### 課題2(必須課題)
-`my_bouncing1.c`に実装した。
-- 2次元空間にシミュレーションを拡張した。
-- bouncingについては、ややこしくなる状況として、以下の場合に注意して実装した。
-    - 1 step内で同じ物体が複数回壁に反射する
-        - 例えば、長方形フィールドの角近辺に当たった場合、x方向の壁とy方向の壁の両方に反射する。
-        - y方向を判定の優先度を高くし、bounceする物体がなくなるまでwhileでbounce関数を回し続けるという処理んいより実現した。
-    - 速度が非常に大きくなると1フレームで反射の処理を追いきれない。
-        - デフォルトの時間幅では、フィールドのスケールに対して微小とは到底言えなかったため、dt=1e-2, 1e-3などの値を想定して実装した。
-        - ただし、常微分方程式の数値解法における「硬い方程式」、すなわち変化が急激であり、微小時間幅dtを非常に小さくしなければ適切なシミュレーションが出来ない場合などは、発散させて終わりではなく、検知すべきであると考えた。そのため、dtが必要な幅よりも大きく、1フレームで追いきれない場合にはエラーを出して止める処理をした。
-
-### 課題3(必須課題)
-`my_bouncing2.c`に実装した。
-- 指定されたファイル形式をパースし、適切に読み込む関数`read_data`を作成した。
-- ファイルに記載されている物体数と異なる個数を引数に指定した場合は次のようにした。
-    - `objects`配列は予め、新たに作ったメンバ`exist`を0にしたダミーで埋めておく。
-    - 物体数を過剰に指定した場合、ファイル読み取りの返り値のポインタがNULLとなった時点でbreak
-    - 過小に指定した場合は途中で終わる。
-    - 実際に読み込んだ物体の個数は関数に参照渡しint型ポインタを介してmainに戻した。
-
-### 課題4(必須課題)
-`my_bouncing3.c`に実装した。
-- `fusion_pairs`及びそのループの中で呼び出す`fusion`, `calc_sq_distance`(距離の2乗を計算する関数)を作成した。
-- 柔軟性のため、fusionが起こる距離の閾値は`Condition`構造体のメンバとして実装した。
-
-### 課題5(発展課題)
-`my_bouncing4.c`に実装した。
-追加した機能は以下の通りである。
+## Description
 #### 物体に対してランダムにアルファベットを割り当てる機能
 - ステータス表示、フィールドの描画の際にその記号を用いる。
 #### 融合して無くなった物体は赤色で表示
@@ -88,7 +26,8 @@ markdownファイルの中に図を埋め込んでいるが、正しくレンダ
 #### 各物体に対して、これまで融合してきた相手の物体のシンボルを表示し、リアルタイムで今どの物体がどの物体と一体となったかが分かるようにした。
 - structにsymbolという文字列をもたせ、描画するようにした。
 
-#### 運動方程式の数値解法(位置と速度の更新方法)をオイラー法の他に実装した
+#### 運動方程式の数値解法(位置と速度の更新方法)を複数実装した
+- **オイラー法** 
 - **ホイン法** (`my_update_params_heuns`)
 - **中点法** (`my_update_middle_point_method`)
 
@@ -101,3 +40,7 @@ markdownファイルの中に図を埋め込んでいるが、正しくレンダ
     - 'D'を押すと一段階speedアップ
     
     という効果をリアルタイムで付けた。これにより、シミュレーション中にspeedの自由自在な調整ができるようになった。ターミナルや環境、特にdisplayのFPSによっては画面のちらつきが目立つかもしれない。
+
+
+## Note
+東京大学2021年度Aセメスター「ソフトウェア2」の発展課題として実装
